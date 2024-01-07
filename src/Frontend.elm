@@ -98,8 +98,8 @@ view model =
                     , spacing 100
                     , centerX
                     ]
-                    [ model.playerTopLeft |> Maybe.andThen (flip Dict.get model.played) |> viewCard
-                    , model.playerTopRight |> Maybe.andThen (flip Dict.get model.played) |> viewCard
+                    [ viewCardWithName (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.played)) model.playerTopLeft
+                    , viewCardWithName (model.playerTopRight |> Maybe.andThen (flip Dict.get model.played)) model.playerTopRight
                     ]
                 , row
                     [ -- cards on the sides
@@ -107,14 +107,14 @@ view model =
                     , spacing 400
                     , centerX
                     ]
-                    [ model.playerLeft |> Maybe.andThen (flip Dict.get model.played) |> viewCard
-                    , model.playerRight |> Maybe.andThen (flip Dict.get model.played) |> viewCard
+                    [ viewCardWithName (model.playerLeft |> Maybe.andThen (flip Dict.get model.played)) model.playerLeft
+                    , viewCardWithName (model.playerRight |> Maybe.andThen (flip Dict.get model.played)) model.playerRight
                     ]
                 , row
                     [ -- card in the middle
                       centerX
                     ]
-                    [ Dict.get model.name model.played |> viewCard
+                    [ viewCardWithName (Dict.get model.name model.played) (Just model.name)
                     ]
                 , row
                     [ -- maximum of 8 cards
@@ -137,6 +137,19 @@ complete_list n list =
 
         head :: tail ->
             Just head :: complete_list (n - 1) tail
+
+
+viewCardWithName : Maybe Card -> Maybe String -> Element FrontendMsg
+viewCardWithName card name =
+    column
+        [ width (px 100)
+        , height fill
+        , spacing 10
+        , padding 10
+        ]
+        [ viewCard card
+        , text (name |> Maybe.withDefault "")
+        ]
 
 
 viewCard : Maybe Card -> Element FrontendMsg
