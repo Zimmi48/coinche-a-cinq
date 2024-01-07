@@ -31,6 +31,7 @@ init : Url.Url -> Nav.Key -> ( Model, Cmd FrontendMsg )
 init url key =
     ( { key = key
       , name = ""
+      , playing = False
       , hand = []
       , played = Dict.empty
       , playerTopLeft = Nothing

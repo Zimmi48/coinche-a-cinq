@@ -10,6 +10,7 @@ import Url exposing (Url)
 type alias FrontendModel =
     { key : Key
     , name : String
+    , playing : Bool
     , hand : List Card
     , played : Dict String Card
     , playerLeft : Maybe String
