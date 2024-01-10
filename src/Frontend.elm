@@ -91,7 +91,7 @@ update msg model =
                 Nothing ->
                     ( { model
                         | played = Dict.insert model.name card model.played
-                        , hand = model.hand |> List.filter ((/=) card)
+                        , hand = model.hand |> List.filter ((/=) card) |> sortHand
                       }
                     , Lamdera.sendToBackend (Played card)
                     )
@@ -150,7 +150,7 @@ updateFromBackend msg model =
             )
 
         GiveHand hand ->
-            ( { model | hand = hand }
+            ( { model | hand = sortHand hand }
             , Cmd.none
             )
 
@@ -163,6 +163,42 @@ updateFromBackend msg model =
             ( { model | played = Dict.empty }
             , Cmd.none
             )
+
+
+sortHand : List Card -> List Card
+sortHand hand =
+    let
+        -- separate the hand in four lists
+        hearts =
+            hand |> List.filter ((==) Hearts << .suit)
+
+        spades =
+            hand |> List.filter ((==) Spades << .suit)
+
+        diamonds =
+            hand |> List.filter ((==) Diamonds << .suit)
+
+        clubs =
+            hand |> List.filter ((==) Clubs << .suit)
+    in
+    case (hearts, diamonds) of
+        ([], _) ->
+            -- use diamonds to separate spades and clubs
+            spades ++ diamonds ++ clubs
+
+        (_, []) ->
+            -- use hearts to separate spades and clubs
+            spades ++ hearts ++ clubs
+
+        _ ->
+            case spades of
+                [] ->
+                    -- use clubs to separate hearts and diamonds
+                    hearts ++ clubs ++ diamonds
+
+                _ ->
+                    -- use spades to separate hearts and diamonds
+                    hearts ++ spades ++ diamonds ++ clubs
 
 
 view : Model -> Browser.Document FrontendMsg
