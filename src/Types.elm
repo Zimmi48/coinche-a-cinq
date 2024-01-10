@@ -42,11 +42,13 @@ type ToBackend
 
 type BackendMsg
     = NoOpBackendMsg
+    | NewGame Game
 
 
 type ToFrontend
     = NoOpToFrontend
     | PlayersList (List String)
+    | GiveHand (List Card)
 
 
 type alias Player =

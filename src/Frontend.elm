@@ -47,6 +47,7 @@ init url key =
             [ Lamdera.sendToBackend Reset
             , Nav.pushUrl key "/"
             ]
+
       else
         Cmd.none
     )
@@ -125,6 +126,11 @@ updateFromBackend msg model =
                                 >> flip List.getAt players
                             )
               }
+            , Cmd.none
+            )
+
+        GiveHand hand ->
+            ( { model | hand = hand }
             , Cmd.none
             )
 
