@@ -43,6 +43,7 @@ init url key =
       , playerTopRight = Nothing
       , playerLeft = Nothing
       , playerRight = Nothing
+      , trump = Nothing
       }
     , if url.path == "/reset" then
         Cmd.batch
@@ -91,7 +92,10 @@ update msg model =
                 Nothing ->
                     ( { model
                         | played = Dict.insert model.name card model.played
-                        , hand = model.hand |> List.filter ((/=) card) |> sortHand
+                        , hand =
+                            model.hand
+                                |> List.filter ((/=) card)
+                                |> sortHand model.trump
                       }
                     , Lamdera.sendToBackend (Played card)
                     )
@@ -99,6 +103,14 @@ update msg model =
         GatherCards ->
             ( { model | played = Dict.empty }
             , Lamdera.sendToBackend Gathered
+            )
+
+        ChangeTrump trump ->
+            ( { model
+                | trump = Just trump
+                , hand = sortHand (Just trump) model.hand
+              }
+            , Lamdera.sendToBackend (TrumpChanged trump)
             )
 
         NoOpFrontendMsg ->
@@ -150,7 +162,7 @@ updateFromBackend msg model =
             )
 
         GiveHand hand ->
-            ( { model | hand = sortHand hand }
+            ( { model | hand = sortHand model.trump hand }
             , Cmd.none
             )
 
@@ -164,29 +176,45 @@ updateFromBackend msg model =
             , Cmd.none
             )
 
+        NewTrump trump ->
+            ( { model
+                | trump = Just trump
+                , hand = sortHand (Just trump) model.hand
+              }
+            , Cmd.none
+            )
 
-sortHand : List Card -> List Card
-sortHand hand =
+
+sortHand : Maybe Suit -> List Card -> List Card
+sortHand trump hand =
     let
         -- separate the hand in four lists
         hearts =
-            hand |> List.filter ((==) Hearts << .suit)
+            hand
+                |> List.filter ((==) Hearts << .suit)
+                |> sortRank (trump == Just Hearts)
 
         spades =
-            hand |> List.filter ((==) Spades << .suit)
+            hand
+                |> List.filter ((==) Spades << .suit)
+                |> sortRank (trump == Just Spades)
 
         diamonds =
-            hand |> List.filter ((==) Diamonds << .suit)
+            hand
+                |> List.filter ((==) Diamonds << .suit)
+                |> sortRank (trump == Just Diamonds)
 
         clubs =
-            hand |> List.filter ((==) Clubs << .suit)
+            hand
+                |> List.filter ((==) Clubs << .suit)
+                |> sortRank (trump == Just Clubs)
     in
-    case (hearts, diamonds) of
-        ([], _) ->
+    case ( hearts, diamonds ) of
+        ( [], _ ) ->
             -- use diamonds to separate spades and clubs
             spades ++ diamonds ++ clubs
 
-        (_, []) ->
+        ( _, [] ) ->
             -- use hearts to separate spades and clubs
             spades ++ hearts ++ clubs
 
@@ -199,6 +227,11 @@ sortHand hand =
                 _ ->
                     -- use spades to separate hearts and diamonds
                     hearts ++ spades ++ diamonds ++ clubs
+
+
+sortRank : Bool -> List Card -> List Card
+sortRank isTrump cards =
+    List.sortBy (.rank >> rankOrder isTrump >> negate) cards
 
 
 view : Model -> Browser.Document FrontendMsg
@@ -287,6 +320,19 @@ viewGame model =
         , padding 10
         ]
         [ row
+            [ -- selector for the trump
+              height fill
+            , spacing 100
+            , centerX
+            ]
+            [ text "Trump"
+            , -- one button per suit
+              chooseTrumpButton model.trump Clubs
+            , chooseTrumpButton model.trump Diamonds
+            , chooseTrumpButton model.trump Hearts
+            , chooseTrumpButton model.trump Spades
+            ]
+        , row
             [ -- cards centered towards the middle
               height fill
             , spacing 100
@@ -316,14 +362,7 @@ viewGame model =
             ]
             [ if allPlayersHavePlayed model then
                 Input.button
-                    [ centerX
-                    , Border.rounded 5
-                    , Border.width 1
-                    , Border.solid
-                    , Border.color (rgb255 0 0 0)
-                    , padding 10
-                    , dracula3
-                    ]
+                    (baseButtonAttributes ++ [ dracula3 ])
                     { onPress = Just GatherCards
                     , label = text "Gather"
                     }
@@ -339,6 +378,22 @@ viewGame model =
             ]
             (model.hand |> complete_list 8 |> List.map (viewCard dracula))
         ]
+
+
+chooseTrumpButton : Maybe Suit -> Suit -> Element FrontendMsg
+chooseTrumpButton trump suit =
+    Input.button
+        (baseButtonAttributes
+            ++ [ if trump == Just suit then
+                    dracula3
+
+                 else
+                    dracula2
+               ]
+        )
+        { onPress = Just (ChangeTrump suit)
+        , label = text (suitToString suit)
+        }
 
 
 allPlayersHavePlayed : Model -> Bool
@@ -452,3 +507,13 @@ rankToString rank =
 
         King ->
             "K"
+
+
+baseButtonAttributes =
+    [ centerX
+    , Border.rounded 5
+    , Border.width 1
+    , Border.solid
+    , Border.color (rgb255 0 0 0)
+    , padding 10
+    ]

@@ -17,6 +17,7 @@ type alias FrontendModel =
     , playerRight : Maybe String
     , playerTopLeft : Maybe String
     , playerTopRight : Maybe String
+    , trump : Maybe Suit
     }
 
 
@@ -33,6 +34,7 @@ type FrontendMsg
     | StartGame
     | PlayCard Card
     | GatherCards
+    | ChangeTrump Suit
     | NoOpFrontendMsg
 
 
@@ -42,6 +44,7 @@ type ToBackend
     | Reset
     | Played Card
     | Gathered
+    | TrumpChanged Suit
 
 
 type BackendMsg
@@ -55,6 +58,7 @@ type ToFrontend
     | GiveHand (List Card)
     | PlayedBy String Card
     | ClearPlayed
+    | NewTrump Suit
 
 
 type alias Player =
@@ -94,3 +98,55 @@ type Rank
     | Jack
     | Queen
     | King
+
+
+rankValue : Bool -> Rank -> Int
+rankValue isTrump rank =
+    case rank of
+        Ace ->
+            11
+
+        Ten ->
+            10
+
+        Five ->
+            5
+
+        King ->
+            4
+
+        Queen ->
+            3
+
+        Jack ->
+            if isTrump then
+                20
+
+            else
+                2
+
+        Nine ->
+            if isTrump then
+                14
+
+            else
+                0
+
+        _ ->
+            0
+
+
+rankOrder : Bool -> Rank -> Int
+rankOrder isTrump rank =
+    case rank of
+        Eight ->
+            -1
+
+        Seven ->
+            -2
+
+        Six ->
+            -3
+
+        _ ->
+            rankValue isTrump rank

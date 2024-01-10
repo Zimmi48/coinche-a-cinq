@@ -145,6 +145,16 @@ updateFromFrontend sessionId clientId msg model =
                     , sendToAllPlayers model.players ClearPlayed
                     )
 
+        TrumpChanged newTrump ->
+            case model.game of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just game ->
+                    ( model
+                    , sendToAllPlayers model.players (NewTrump newTrump)
+                    )
+
 
 sendToAllPlayers : List Player -> ToFrontend -> Cmd BackendMsg
 sendToAllPlayers players msg =
