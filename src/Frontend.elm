@@ -7,6 +7,7 @@ import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Font as Font
 import Element.Input as Input
 import Lamdera
 import List.Extra as List
@@ -286,6 +287,17 @@ viewCard default card =
         , spacing 10
         , padding 10
         , Maybe.map (\_ -> white) card |> Maybe.withDefault default
+        , Font.color (
+            case card |> Maybe.map .suit of
+                Just Diamonds ->
+                    rgb255 255 0 0
+
+                Just Hearts ->
+                    rgb255 255 0 0
+
+                _ ->
+                    rgb255 0 0 0
+        )
         ]
         [ text (card |> Maybe.map (.suit >> suitToString) |> Maybe.withDefault "")
         , text (card |> Maybe.map (.rank >> rankToString) |> Maybe.withDefault "")
