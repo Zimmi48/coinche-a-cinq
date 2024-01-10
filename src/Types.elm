@@ -29,11 +29,15 @@ type alias BackendModel =
 type FrontendMsg
     = UrlClicked UrlRequest
     | UrlChanged Url
+    | UpdateName String
+    | StartGame
     | NoOpFrontendMsg
 
 
 type ToBackend
     = NoOpToBackend
+    | JoinGame String
+    | Reset
 
 
 type BackendMsg
@@ -42,6 +46,7 @@ type BackendMsg
 
 type ToFrontend
     = NoOpToFrontend
+    | PlayersList (List String)
 
 
 type alias Player =
