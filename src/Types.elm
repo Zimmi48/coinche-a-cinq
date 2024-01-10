@@ -32,6 +32,7 @@ type FrontendMsg
     | UpdateName String
     | StartGame
     | PlayCard Card
+    | GatherCards
     | NoOpFrontendMsg
 
 
@@ -40,6 +41,7 @@ type ToBackend
     | JoinGame String
     | Reset
     | Played Card
+    | Gathered
 
 
 type BackendMsg
@@ -52,6 +54,7 @@ type ToFrontend
     | PlayersList (List String)
     | GiveHand (List Card)
     | PlayedBy String Card
+    | ClearPlayed
 
 
 type alias Player =

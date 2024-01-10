@@ -122,6 +122,29 @@ updateFromFrontend sessionId clientId msg model =
                         _ ->
                             ( model, Cmd.none )
 
+        Gathered ->
+            case model.game of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just game ->
+                    let
+                        newlyGathered =
+                            Dict.toList game.played
+                                |> List.map Tuple.second
+                    in
+                    ( { model
+                        | game =
+                            Just
+                                { game
+                                    | played = Dict.empty
+                                    , gathered =
+                                        Dict.update sessionId (\cards -> Just (newlyGathered ++ Maybe.withDefault [] cards)) game.gathered
+                                }
+                      }
+                    , sendToAllPlayers model.players ClearPlayed
+                    )
+
 
 sendToAllPlayers : List Player -> ToFrontend -> Cmd BackendMsg
 sendToAllPlayers players msg =

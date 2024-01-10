@@ -96,6 +96,11 @@ update msg model =
                     , Lamdera.sendToBackend (Played card)
                     )
 
+        GatherCards ->
+            ( { model | played = Dict.empty }
+            , Lamdera.sendToBackend Gathered
+            )
+
         NoOpFrontendMsg ->
             ( model, Cmd.none )
 
@@ -151,6 +156,11 @@ updateFromBackend msg model =
 
         PlayedBy name card ->
             ( { model | played = Dict.insert name card model.played }
+            , Cmd.none
+            )
+
+        ClearPlayed ->
+            ( { model | played = Dict.empty }
             , Cmd.none
             )
 
@@ -265,6 +275,27 @@ viewGame model =
             [ viewCardWithName (Dict.get model.name model.played) (Just model.name)
             ]
         , row
+            [ -- gather button
+              centerX
+            ]
+            [ if allPlayersHavePlayed model then
+                Input.button
+                    [ centerX
+                    , Border.rounded 5
+                    , Border.width 1
+                    , Border.solid
+                    , Border.color (rgb255 0 0 0)
+                    , padding 10
+                    , dracula3
+                    ]
+                    { onPress = Just GatherCards
+                    , label = text "Gather"
+                    }
+
+              else
+                none
+            ]
+        , row
             [ -- maximum of 8 cards
               height fill
             , spacing 70
@@ -272,6 +303,11 @@ viewGame model =
             ]
             (model.hand |> complete_list 8 |> List.map (viewCard dracula))
         ]
+
+
+allPlayersHavePlayed : Model -> Bool
+allPlayersHavePlayed model =
+    Dict.size model.played == 5
 
 
 complete_list : Int -> List a -> List (Maybe a)
