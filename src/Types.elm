@@ -31,6 +31,7 @@ type FrontendMsg
     | UrlChanged Url
     | UpdateName String
     | StartGame
+    | PlayCard Card
     | NoOpFrontendMsg
 
 
@@ -38,6 +39,7 @@ type ToBackend
     = NoOpToBackend
     | JoinGame String
     | Reset
+    | Played Card
 
 
 type BackendMsg
@@ -49,6 +51,7 @@ type ToFrontend
     = NoOpToFrontend
     | PlayersList (List String)
     | GiveHand (List Card)
+    | PlayedBy String Card
 
 
 type alias Player =

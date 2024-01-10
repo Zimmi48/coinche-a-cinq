@@ -7,6 +7,7 @@ import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Events exposing (onClick)
 import Element.Font as Font
 import Element.Input as Input
 import Lamdera
@@ -82,6 +83,19 @@ update msg model =
             , Lamdera.sendToBackend (JoinGame model.name)
             )
 
+        PlayCard card ->
+            case model.played |> Dict.get model.name of
+                Just _ ->
+                    ( model, Cmd.none )
+
+                Nothing ->
+                    ( { model
+                        | played = Dict.insert model.name card model.played
+                        , hand = model.hand |> List.filter ((/=) card)
+                      }
+                    , Lamdera.sendToBackend (Played card)
+                    )
+
         NoOpFrontendMsg ->
             ( model, Cmd.none )
 
@@ -132,6 +146,11 @@ updateFromBackend msg model =
 
         GiveHand hand ->
             ( { model | hand = hand }
+            , Cmd.none
+            )
+
+        PlayedBy name card ->
+            ( { model | played = Dict.insert name card model.played }
             , Cmd.none
             )
 
@@ -282,13 +301,13 @@ viewCardWithName card name =
 
 viewCard default card =
     column
-        [ width (px 100)
-        , height (px 150)
-        , spacing 10
-        , padding 10
-        , Maybe.map (\_ -> white) card |> Maybe.withDefault default
-        , Font.color (
-            case card |> Maybe.map .suit of
+        ([ width (px 100)
+         , height (px 150)
+         , spacing 10
+         , padding 10
+         , Maybe.map (\_ -> white) card |> Maybe.withDefault default
+         , Font.color
+            (case card |> Maybe.map .suit of
                 Just Diamonds ->
                     rgb255 255 0 0
 
@@ -297,8 +316,17 @@ viewCard default card =
 
                 _ ->
                     rgb255 0 0 0
+            )
+         ]
+            ++ (card
+                    |> Maybe.map
+                        (\concreteCard ->
+                            [ onClick (PlayCard concreteCard)
+                            ]
+                        )
+                    |> Maybe.withDefault []
+               )
         )
-        ]
         [ text (card |> Maybe.map (.suit >> suitToString) |> Maybe.withDefault "")
         , text (card |> Maybe.map (.rank >> rankToString) |> Maybe.withDefault "")
         ]

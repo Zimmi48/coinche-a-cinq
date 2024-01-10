@@ -3,6 +3,7 @@ module Backend exposing (..)
 import Basics.Extra exposing (flip)
 import Dict
 import Lamdera exposing (ClientId, SessionId)
+import List.Extra as List
 import Random
 import Random.List
 import Types exposing (..)
@@ -90,6 +91,36 @@ updateFromFrontend sessionId clientId msg model =
                             |> sendToAllPlayers players
                         ]
                     )
+
+        Played card ->
+            case model.game of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just game ->
+                    case
+                        ( Dict.get sessionId game.hands
+                        , List.find (.id >> (==) sessionId) model.players
+                        )
+                    of
+                        ( Just hand, Just player ) ->
+                            let
+                                newHand =
+                                    List.remove card hand
+
+                                newGame =
+                                    { game
+                                        | played =
+                                            Dict.insert sessionId card game.played
+                                        , hands = Dict.insert sessionId newHand game.hands
+                                    }
+                            in
+                            ( { model | game = Just newGame }
+                            , sendToAllPlayers model.players (PlayedBy player.name card)
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
 
 
 sendToAllPlayers : List Player -> ToFrontend -> Cmd BackendMsg
