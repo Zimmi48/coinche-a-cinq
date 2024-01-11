@@ -155,6 +155,52 @@ updateFromFrontend sessionId clientId msg model =
                     , sendToAllPlayers model.players (NewTrump newTrump)
                     )
 
+        RestoreName ->
+            case List.find (.id >> (==) sessionId) model.players of
+                Just player ->
+                    ( model
+                    , Lamdera.sendToFrontend sessionId (RestoredName player.name)
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        RestoreSession ->
+            case model.game of
+                Nothing ->
+                    ( model
+                    , model.players
+                        |> List.map .name
+                        |> PlayersList
+                        |> Lamdera.sendToFrontend sessionId
+                    )
+
+                Just game ->
+                    ( model
+                    , Cmd.batch
+                        ((model.players
+                            |> List.map .name
+                            |> PlayersList
+                            |> Lamdera.sendToFrontend sessionId
+                         )
+                            :: (Dict.get sessionId game.hands
+                                    |> Maybe.map (\hand -> [ Lamdera.sendToFrontend sessionId (GiveHand hand) ])
+                                    |> Maybe.withDefault []
+                               )
+                            ++ (game.played
+                                    |> Dict.toList
+                                    |> List.filterMap
+                                        (\( playerId, card ) ->
+                                            List.find (.id >> (==) playerId) model.players
+                                                |> Maybe.map
+                                                    (\player ->
+                                                        Lamdera.sendToFrontend sessionId (PlayedBy player.name card)
+                                                    )
+                                        )
+                               )
+                        )
+                    )
+
 
 sendToAllPlayers : List Player -> ToFrontend -> Cmd BackendMsg
 sendToAllPlayers players msg =

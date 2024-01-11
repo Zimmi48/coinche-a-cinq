@@ -45,6 +45,8 @@ type ToBackend
     | Played Card
     | Gathered
     | TrumpChanged Suit
+    | RestoreName
+    | RestoreSession
 
 
 type BackendMsg
@@ -59,6 +61,7 @@ type ToFrontend
     | PlayedBy String Card
     | ClearPlayed
     | NewTrump Suit
+    | RestoredName String
 
 
 type alias Player =

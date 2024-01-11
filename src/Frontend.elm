@@ -52,7 +52,7 @@ init url key =
             ]
 
       else
-        Cmd.none
+        Lamdera.sendToBackend RestoreName
     )
 
 
@@ -182,6 +182,11 @@ updateFromBackend msg model =
                 , hand = sortHand (Just trump) model.hand
               }
             , Cmd.none
+            )
+
+        RestoredName name ->
+            ( { model | name = name, playing = True }
+            , Lamdera.sendToBackend RestoreSession
             )
 
 
