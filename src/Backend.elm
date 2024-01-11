@@ -246,6 +246,9 @@ updateFromFrontend sessionId clientId msg model =
                         )
                     )
 
+        NextRoundRequested ->
+            ( model, Cmd.none )
+
 
 sendToAllPlayers : List Player -> ToFrontend -> Cmd BackendMsg
 sendToAllPlayers players msg =

@@ -36,6 +36,7 @@ type FrontendMsg
     | PlayCard Card
     | GatherCards
     | ChangeTrump Suit
+    | NextRound
     | NoOpFrontendMsg
 
 
@@ -48,6 +49,7 @@ type ToBackend
     | TrumpChanged Suit
     | RestoreName
     | RestoreSession
+    | NextRoundRequested
 
 
 type BackendMsg

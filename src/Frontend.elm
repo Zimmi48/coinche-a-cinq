@@ -114,6 +114,9 @@ update msg model =
             , Lamdera.sendToBackend (TrumpChanged trump)
             )
 
+        NextRound ->
+            ( model, Lamdera.sendToBackend NextRoundRequested )
+
         NoOpFrontendMsg ->
             ( model, Cmd.none )
 
@@ -371,7 +374,13 @@ viewGame model =
             [ -- gather button
               centerX
             ]
-            [ if allPlayersHavePlayed model then
+            [ if not (Dict.isEmpty model.scores) then
+                Input.button
+                    (baseButtonAttributes ++ [ dracula3 ])
+                    { onPress = Just NextRound
+                    , label = text "Next round"
+                    }
+              else if allPlayersHavePlayed model then
                 Input.button
                     (baseButtonAttributes ++ [ dracula3 ])
                     { onPress = Just GatherCards
