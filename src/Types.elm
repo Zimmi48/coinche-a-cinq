@@ -18,6 +18,7 @@ type alias FrontendModel =
     , playerTopLeft : Maybe String
     , playerTopRight : Maybe String
     , trump : Maybe Suit
+    , scores : Dict String Int
     }
 
 
@@ -62,6 +63,7 @@ type ToFrontend
     | ClearPlayed
     | NewTrump Suit
     | RestoredName String
+    | Scores (Dict String Int)
 
 
 type alias Player =
@@ -74,6 +76,7 @@ type alias Game =
     { hands : Dict SessionId (List Card)
     , gathered : Dict SessionId (List Card)
     , played : Dict SessionId Card
+    , trump : Maybe Suit
     }
 
 
@@ -153,3 +156,8 @@ rankOrder isTrump rank =
 
         _ ->
             rankValue isTrump rank
+
+
+cardValue : Maybe Suit -> Card -> Int
+cardValue trump card =
+    rankValue (Just card.suit == trump) card.rank

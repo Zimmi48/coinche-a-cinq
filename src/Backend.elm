@@ -2,10 +2,12 @@ module Backend exposing (..)
 
 import Basics.Extra exposing (flip)
 import Dict
+import Dict.Extra as Dict
 import Lamdera exposing (ClientId, SessionId)
 import List.Extra as List
 import Random
 import Random.List
+import Tuple exposing (second)
 import Types exposing (..)
 
 
@@ -132,17 +134,50 @@ updateFromFrontend sessionId clientId msg model =
                         newlyGathered =
                             Dict.toList game.played
                                 |> List.map Tuple.second
+
+                        gathered =
+                            Dict.update sessionId (\cards -> Just (newlyGathered ++ Maybe.withDefault [] cards)) game.gathered
                     in
                     ( { model
                         | game =
                             Just
                                 { game
                                     | played = Dict.empty
-                                    , gathered =
-                                        Dict.update sessionId (\cards -> Just (newlyGathered ++ Maybe.withDefault [] cards)) game.gathered
+                                    , gathered = gathered
                                 }
                       }
-                    , sendToAllPlayers model.players ClearPlayed
+                    , [ sendToAllPlayers model.players ClearPlayed
+                      , if Dict.any (\_ -> List.isEmpty) game.hands then
+                            -- compute score
+                            let
+                                scoresDict =
+                                    Dict.map
+                                        (\_ ->
+                                            List.map (cardValue game.trump)
+                                                >> List.sum
+                                        )
+                                        gathered
+
+                                scores =
+                                    model.players
+                                        |> List.filterMap
+                                            (\player ->
+                                                Dict.get player.id scoresDict
+                                                    |> Maybe.map
+                                                        (\score ->
+                                                            ( player.name
+                                                            , score
+                                                            )
+                                                        )
+                                            )
+                                        |> Dict.fromList
+                            in
+                            sendToAllPlayers model.players (Scores scores)
+
+                        else
+                            Cmd.none
+                      ]
+                        |> Cmd.batch
                     )
 
         TrumpChanged newTrump ->
@@ -151,7 +186,7 @@ updateFromFrontend sessionId clientId msg model =
                     ( model, Cmd.none )
 
                 Just game ->
-                    ( model
+                    ( { model | game = Just { game | trump = Just newTrump } }
                     , sendToAllPlayers model.players (NewTrump newTrump)
                     )
 
@@ -257,6 +292,7 @@ initialGame player1 player2 player3 player4 player5 =
                                                                         ]
                                                                 , gathered = Dict.empty
                                                                 , played = Dict.empty
+                                                                , trump = Nothing
                                                                 }
                                                             )
                                                 )

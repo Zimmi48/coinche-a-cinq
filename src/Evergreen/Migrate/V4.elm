@@ -133,7 +133,6 @@ migrate_Types_ToBackend old =
             Evergreen.V4.Types.TrumpChanged (p0 |> migrate_Types_Suit)
 
 
-
 migrate_Types_ToFrontend : Evergreen.V3.Types.ToFrontend -> Evergreen.V4.Types.ToFrontend
 migrate_Types_ToFrontend old =
     case old of

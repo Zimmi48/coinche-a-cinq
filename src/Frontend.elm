@@ -44,6 +44,7 @@ init url key =
       , playerLeft = Nothing
       , playerRight = Nothing
       , trump = Nothing
+      , scores = Dict.empty
       }
     , if url.path == "/reset" then
         Cmd.batch
@@ -187,6 +188,11 @@ updateFromBackend msg model =
         RestoredName name ->
             ( { model | name = name, playing = True }
             , Lamdera.sendToBackend RestoreSession
+            )
+
+        Scores scores ->
+            ( { model | scores = scores }
+            , Cmd.none
             )
 
 
@@ -343,8 +349,8 @@ viewGame model =
             , spacing 100
             , centerX
             ]
-            [ viewCardWithName (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.played)) model.playerTopLeft
-            , viewCardWithName (model.playerTopRight |> Maybe.andThen (flip Dict.get model.played)) model.playerTopRight
+            [ viewCardWithName (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.played)) (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.scores)) model.playerTopLeft
+            , viewCardWithName (model.playerTopRight |> Maybe.andThen (flip Dict.get model.played)) (model.playerTopRight |> Maybe.andThen (flip Dict.get model.scores)) model.playerTopRight
             ]
         , row
             [ -- cards on the sides
@@ -352,14 +358,14 @@ viewGame model =
             , spacing 400
             , centerX
             ]
-            [ viewCardWithName (model.playerLeft |> Maybe.andThen (flip Dict.get model.played)) model.playerLeft
-            , viewCardWithName (model.playerRight |> Maybe.andThen (flip Dict.get model.played)) model.playerRight
+            [ viewCardWithName (model.playerLeft |> Maybe.andThen (flip Dict.get model.played)) (model.playerLeft |> Maybe.andThen (flip Dict.get model.scores)) model.playerLeft
+            , viewCardWithName (model.playerRight |> Maybe.andThen (flip Dict.get model.played)) (model.playerRight |> Maybe.andThen (flip Dict.get model.scores)) model.playerRight
             ]
         , row
             [ -- card in the middle
               centerX
             ]
-            [ viewCardWithName (Dict.get model.name model.played) (Just model.name)
+            [ viewCardWithName (Dict.get model.name model.played) (Dict.get model.name model.scores) (Just model.name)
             ]
         , row
             [ -- gather button
@@ -416,8 +422,8 @@ complete_list n list =
             Just head :: complete_list (n - 1) tail
 
 
-viewCardWithName : Maybe Card -> Maybe String -> Element FrontendMsg
-viewCardWithName card name =
+viewCardWithName : Maybe Card -> Maybe Int -> Maybe String -> Element FrontendMsg
+viewCardWithName card score name =
     column
         [ width (px 120)
         , height (px 200)
@@ -427,7 +433,14 @@ viewCardWithName card name =
         ]
         [ viewCard dracula2 card
         , el [ centerX ]
-            (text (name |> Maybe.withDefault ""))
+            (text
+                (Maybe.withDefault "" name
+                    ++ Maybe.withDefault ""
+                        (score
+                            |> Maybe.map (\s -> " (" ++ String.fromInt s ++ ")")
+                        )
+                )
+            )
         ]
 
 

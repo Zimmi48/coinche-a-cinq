@@ -12,6 +12,7 @@
             "elm/random": "1.0.0",
             "elm/url": "1.0.0",
             "elm-community/basics-extra": "4.1.0",
+            "elm-community/dict-extra": "2.4.0",
             "elm-community/list-extra": "8.7.0",
             "elm-community/random-extra": "3.2.0",
             "lamdera/codecs": "1.0.0",
