@@ -152,9 +152,19 @@ updateFromFrontend sessionId clientId msg model =
                             let
                                 scoresDict =
                                     Dict.map
-                                        (\_ ->
-                                            List.map (cardValue game.trump)
-                                                >> List.sum
+                                        (\playerId hand ->
+                                            let
+                                             score =
+                                                hand
+                                                    |>
+                                                List.map (cardValue game.trump)
+                                                    |> List.sum
+                                            in
+                                            if playerId == sessionId then
+                                                -- "10 de der"
+                                                score + 10
+                                            else
+                                                score
                                         )
                                         gathered
 
