@@ -380,6 +380,7 @@ viewGame model =
                     { onPress = Just NextRound
                     , label = text "Next round"
                     }
+
               else if allPlayersHavePlayed model then
                 Input.button
                     (baseButtonAttributes ++ [ dracula3 ])

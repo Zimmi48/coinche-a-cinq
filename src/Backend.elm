@@ -76,13 +76,26 @@ updateFromFrontend sessionId clientId msg model =
                                 :: model.players
 
                         shuffleCards =
-                            case players of
-                                [ player1, player2, player3, player4, player5 ] ->
-                                    initialGame player1 player2 player3 player4 player5
-                                        |> Random.generate NewGame
+                            if List.length players == 5 then
+                                let
+                                    initialHands =
+                                        giveInitialHands players
 
-                                _ ->
-                                    Cmd.none
+                                    initialGame =
+                                        Random.map
+                                            (\hands ->
+                                                { hands = hands
+                                                , gathered = Dict.empty
+                                                , played = Dict.empty
+                                                , trump = Nothing
+                                                }
+                                            )
+                                            initialHands
+                                in
+                                Random.generate NewGame initialGame
+
+                            else
+                                Cmd.none
                     in
                     ( { model | players = players }
                     , Cmd.batch
@@ -154,15 +167,15 @@ updateFromFrontend sessionId clientId msg model =
                                     Dict.map
                                         (\playerId hand ->
                                             let
-                                             score =
-                                                hand
-                                                    |>
-                                                List.map (cardValue game.trump)
-                                                    |> List.sum
+                                                score =
+                                                    hand
+                                                        |> List.map (cardValue game.trump)
+                                                        |> List.sum
                                             in
                                             if playerId == sessionId then
                                                 -- "10 de der"
                                                 score + 10
+
                                             else
                                                 score
                                         )
@@ -247,7 +260,44 @@ updateFromFrontend sessionId clientId msg model =
                     )
 
         NextRoundRequested ->
-            ( model, Cmd.none )
+            case model.game of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just game ->
+                    if List.length model.players == 5 then
+                        let
+                            deck =
+                                game.gathered
+                                    |> Dict.values
+                                    |> List.concat
+
+                            newDeck =
+                                Random.int 0 (List.length deck)
+                                    |> Random.map (flip List.splitAt deck)
+                                    |> Random.map (\( before, after ) -> after ++ before)
+
+                            newHands =
+                                Random.map (giveHands model.players) newDeck
+
+                            newGame =
+                                Random.map
+                                    (\hands ->
+                                        { game
+                                            | hands = hands
+                                            , gathered = Dict.empty
+                                            , played = Dict.empty
+                                            , trump = Nothing
+                                        }
+                                    )
+                                    newHands
+                        in
+                        ( model
+                        , Random.generate NewGame newGame
+                        )
+
+                    else
+                        ( model, Cmd.none )
 
 
 sendToAllPlayers : List Player -> ToFrontend -> Cmd BackendMsg
@@ -273,42 +323,64 @@ listOfAllCards =
     List.concatMap (\suit -> List.map (\rank -> { suit = suit, rank = rank }) listOfAllRanks) listOfAllSuits
 
 
-initialGame player1 player2 player3 player4 player5 =
-    listOfAllCards
-        |> Random.List.choices 8
-        -- 8 cards per player
-        |> Random.andThen
-            (\( hand1, deck1 ) ->
-                deck1
-                    |> Random.List.choices 8
-                    |> Random.andThen
-                        (\( hand2, deck2 ) ->
-                            deck2
-                                |> Random.List.choices 8
-                                |> Random.andThen
-                                    (\( hand3, deck3 ) ->
-                                        deck3
-                                            |> Random.List.choices 8
-                                            |> Random.andThen
-                                                (\( hand4, deck4 ) ->
-                                                    deck4
-                                                        |> Random.List.choices 8
-                                                        |> Random.map
-                                                            (\( hand5, _ ) ->
-                                                                { hands =
-                                                                    Dict.fromList
-                                                                        [ ( player1.id, hand1 )
-                                                                        , ( player2.id, hand2 )
-                                                                        , ( player3.id, hand3 )
-                                                                        , ( player4.id, hand4 )
-                                                                        , ( player5.id, hand5 )
-                                                                        ]
-                                                                , gathered = Dict.empty
-                                                                , played = Dict.empty
-                                                                , trump = Nothing
-                                                                }
-                                                            )
-                                                )
-                                    )
-                        )
-            )
+giveInitialHands players =
+    List.foldl
+        (\player acc ->
+            acc
+                |> Random.andThen
+                    (\( hands, deck ) ->
+                        deck
+                            |> Random.List.choices 8
+                            |> Random.map
+                                (\( hand, newDeck ) ->
+                                    ( Dict.insert player.id hand hands, newDeck )
+                                )
+                    )
+        )
+        (Random.constant ( Dict.empty, listOfAllCards ))
+        players
+        |> Random.map Tuple.first
+
+
+giveHands players deck1 =
+    let
+        -- take 3 cards for each player
+        ( hands1, deck2 ) =
+            List.foldl
+                (\player ( hands, deck ) ->
+                    let
+                        ( hand, newDeck ) =
+                            List.splitAt 3 deck
+                    in
+                    ( Dict.insert player.id hand hands, newDeck )
+                )
+                ( Dict.empty, deck1 )
+                players
+
+        -- take 2 cards for each player
+        ( hands2, deck3 ) =
+            List.foldl
+                (\player ( hands, deck ) ->
+                    let
+                        ( hand, newDeck ) =
+                            List.splitAt 2 deck
+                    in
+                    ( Dict.update player.id (Maybe.map ((++) hand)) hands, newDeck )
+                )
+                ( hands1, deck2 )
+                players
+
+        -- take 3 cards for each player
+        ( hands3, _ ) =
+            List.foldl
+                (\player ( hands, deck ) ->
+                    let
+                        ( hand, newDeck ) =
+                            List.splitAt 3 deck
+                    in
+                    ( Dict.update player.id (Maybe.map ((++) hand)) hands, newDeck )
+                )
+                ( hands2, deck3 )
+                players
+    in
+    hands3
