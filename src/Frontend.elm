@@ -166,9 +166,21 @@ updateFromBackend msg model =
             )
 
         GiveHand hand ->
-            ( { model | hand = sortHand model.trump hand }
-            , Cmd.none
-            )
+            if Dict.isEmpty model.scores then
+                ( { model | hand = sortHand model.trump hand }
+                , Cmd.none
+                )
+
+            else
+                -- this is a new round
+                ( { model
+                    | hand = sortHand model.trump hand
+                    , played = Dict.empty
+                    , scores = Dict.empty
+                    , trump = Nothing
+                  }
+                , Cmd.none
+                )
 
         PlayedBy name card ->
             ( { model | played = Dict.insert name card model.played }
