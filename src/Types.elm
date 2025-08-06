@@ -34,6 +34,7 @@ type FrontendMsg
     | UpdateName String
     | StartGame
     | PlayCard Card
+    | UndoCard
     | GatherCards
     | ChangeTrump Suit
     | NextRound
@@ -45,6 +46,7 @@ type ToBackend
     | JoinGame String
     | Reset
     | Played Card
+    | UndoCardPlayed
     | Gathered
     | TrumpChanged Suit
     | RestoreName
@@ -62,6 +64,7 @@ type ToFrontend
     | PlayersList (List String)
     | GiveHand (List Card)
     | PlayedBy String Card
+    | UndoBy String Card
     | ClearPlayed
     | NewTrump Suit
     | RestoredName String

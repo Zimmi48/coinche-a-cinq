@@ -137,6 +137,36 @@ updateFromFrontend sessionId clientId msg model =
                         _ ->
                             ( model, Cmd.none )
 
+        UndoCardPlayed ->
+            case model.game of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just game ->
+                    case
+                        ( Dict.get sessionId game.played
+                        , Dict.get sessionId game.hands
+                        , List.find (.id >> (==) sessionId) model.players
+                        )
+                    of
+                        ( Just card, Just hand, Just player ) ->
+                            let
+                                newHand =
+                                    card :: hand
+
+                                newGame =
+                                    { game
+                                        | played = Dict.remove sessionId game.played
+                                        , hands = Dict.insert sessionId newHand game.hands
+                                    }
+                            in
+                            ( { model | game = Just newGame }
+                            , sendToAllPlayers model.players (UndoBy player.name card)
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
+
         Gathered ->
             case model.game of
                 Nothing ->

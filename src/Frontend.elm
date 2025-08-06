@@ -101,6 +101,19 @@ update msg model =
                     , Lamdera.sendToBackend (Played card)
                     )
 
+        UndoCard ->
+            case model.played |> Dict.get model.name of
+                Just card ->
+                    ( { model
+                        | played = Dict.remove model.name model.played
+                        , hand = (card :: model.hand) |> sortHand model.trump
+                      }
+                    , Lamdera.sendToBackend UndoCardPlayed
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         GatherCards ->
             ( { model | played = Dict.empty }
             , Lamdera.sendToBackend Gathered
@@ -184,6 +197,18 @@ updateFromBackend msg model =
 
         PlayedBy name card ->
             ( { model | played = Dict.insert name card model.played }
+            , Cmd.none
+            )
+
+        UndoBy name card ->
+            ( { model 
+                | played = Dict.remove name model.played
+                , hand = 
+                    if name == model.name then
+                        (card :: model.hand) |> sortHand model.trump
+                    else
+                        model.hand
+              }
             , Cmd.none
             )
 
@@ -383,8 +408,9 @@ viewGame model =
             [ viewCardWithName (Dict.get model.name model.played) (Dict.get model.name model.scores) (Just model.name)
             ]
         , row
-            [ -- gather button
+            [ -- gather button and undo button
               centerX
+              , spacing 20
             ]
             [ if not (Dict.isEmpty model.scores) then
                 Input.button
@@ -398,6 +424,13 @@ viewGame model =
                     (baseButtonAttributes ++ [ dracula3 ])
                     { onPress = Just GatherCards
                     , label = text "Gather"
+                    }
+
+              else if canUndoCard model then
+                Input.button
+                    (baseButtonAttributes ++ [ dracula3 ])
+                    { onPress = Just UndoCard
+                    , label = text "Undo"
                     }
 
               else
@@ -432,6 +465,12 @@ chooseTrumpButton trump suit =
 allPlayersHavePlayed : Model -> Bool
 allPlayersHavePlayed model =
     Dict.size model.played == 5
+
+
+canUndoCard : Model -> Bool
+canUndoCard model =
+    -- Can undo if the current player has played a card but not all players have played
+    (model.played |> Dict.get model.name |> (/=) Nothing) && not (allPlayersHavePlayed model)
 
 
 complete_list : Int -> List a -> List (Maybe a)
