@@ -87,7 +87,7 @@ updateFromFrontend sessionId clientId msg model =
                                                 { hands = hands
                                                 , gathered = Dict.empty
                                                 , played = Dict.empty
-                                                , trump = Nothing
+                                                , trump = NoTrump
                                                 }
                                             )
                                             initialHands
@@ -239,7 +239,7 @@ updateFromFrontend sessionId clientId msg model =
                     ( model, Cmd.none )
 
                 Just game ->
-                    ( { model | game = Just { game | trump = Just newTrump } }
+                    ( { model | game = Just { game | trump = newTrump } }
                     , sendToAllPlayers model.players (NewTrump newTrump)
                     )
 
@@ -317,7 +317,7 @@ updateFromFrontend sessionId clientId msg model =
                                             | hands = hands
                                             , gathered = Dict.empty
                                             , played = Dict.empty
-                                            , trump = Nothing
+                                            , trump = NoTrump
                                         }
                                     )
                                     newHands

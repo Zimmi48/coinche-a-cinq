@@ -43,7 +43,7 @@ init url key =
       , playerTopRight = Nothing
       , playerLeft = Nothing
       , playerRight = Nothing
-      , trump = Nothing
+      , trump = NoTrump
       , scores = Dict.empty
       }
     , if url.path == "/reset" then
@@ -121,8 +121,8 @@ update msg model =
 
         ChangeTrump trump ->
             ( { model
-                | trump = Just trump
-                , hand = sortHand (Just trump) model.hand
+                | trump = trump
+                , hand = sortHand trump model.hand
               }
             , Lamdera.sendToBackend (TrumpChanged trump)
             )
@@ -190,7 +190,7 @@ updateFromBackend msg model =
                     | hand = sortHand model.trump hand
                     , played = Dict.empty
                     , scores = Dict.empty
-                    , trump = Nothing
+                    , trump = NoTrump
                   }
                 , Cmd.none
                 )
@@ -219,8 +219,8 @@ updateFromBackend msg model =
 
         NewTrump trump ->
             ( { model
-                | trump = Just trump
-                , hand = sortHand (Just trump) model.hand
+                | trump = trump
+                , hand = sortHand trump model.hand
               }
             , Cmd.none
             )
@@ -236,29 +236,29 @@ updateFromBackend msg model =
             )
 
 
-sortHand : Maybe Suit -> List Card -> List Card
+sortHand : Trump -> List Card -> List Card
 sortHand trump hand =
     let
         -- separate the hand in four lists
         hearts =
             hand
                 |> List.filter ((==) Hearts << .suit)
-                |> sortRank (trump == Just Hearts)
+                |> sortRank (isTrumpSuit trump Hearts)
 
         spades =
             hand
                 |> List.filter ((==) Spades << .suit)
-                |> sortRank (trump == Just Spades)
+                |> sortRank (isTrumpSuit trump Spades)
 
         diamonds =
             hand
                 |> List.filter ((==) Diamonds << .suit)
-                |> sortRank (trump == Just Diamonds)
+                |> sortRank (isTrumpSuit trump Diamonds)
 
         clubs =
             hand
                 |> List.filter ((==) Clubs << .suit)
-                |> sortRank (trump == Just Clubs)
+                |> sortRank (isTrumpSuit trump Clubs)
     in
     case ( hearts, diamonds ) of
         ( [], _ ) ->
@@ -373,15 +373,19 @@ viewGame model =
         [ row
             [ -- selector for the trump
               height fill
-            , spacing 100
+            , spacing 50
             , centerX
             ]
             [ text "Trump"
             , -- one button per suit
-              chooseTrumpButton model.trump Clubs
-            , chooseTrumpButton model.trump Diamonds
-            , chooseTrumpButton model.trump Hearts
-            , chooseTrumpButton model.trump Spades
+              chooseTrumpButton model.trump (SingleTrump Clubs)
+            , chooseTrumpButton model.trump (SingleTrump Diamonds)
+            , chooseTrumpButton model.trump (SingleTrump Hearts)
+            , chooseTrumpButton model.trump (SingleTrump Spades)
+            , -- button for all trumps
+              chooseTrumpButton model.trump AllTrumps
+            , -- button for no trump
+              chooseTrumpButton model.trump NoTrump
             ]
         , row
             [ -- cards centered towards the middle
@@ -448,19 +452,19 @@ viewGame model =
         ]
 
 
-chooseTrumpButton : Maybe Suit -> Suit -> Element FrontendMsg
-chooseTrumpButton trump suit =
+chooseTrumpButton : Trump -> Trump -> Element FrontendMsg
+chooseTrumpButton currentTrump trump =
     Input.button
         (baseButtonAttributes
-            ++ [ if trump == Just suit then
+            ++ [ if currentTrump == trump then
                     dracula3
 
                  else
                     dracula2
                ]
         )
-        { onPress = Just (ChangeTrump suit)
-        , label = text (suitToString suit)
+        { onPress = Just (ChangeTrump trump)
+        , label = text (trumpToString trump)
         }
 
 
@@ -555,6 +559,19 @@ suitToString suit =
 
         Spades ->
             "♠"
+
+
+trumpToString : Trump -> String
+trumpToString trump =
+    case trump of
+        NoTrump ->
+            "No Trump"
+        
+        SingleTrump suit ->
+            suitToString suit
+        
+        AllTrumps ->
+            "All Trumps"
 
 
 rankToString : Rank -> String

@@ -17,7 +17,7 @@ type alias FrontendModel =
     , playerRight : Maybe String
     , playerTopLeft : Maybe String
     , playerTopRight : Maybe String
-    , trump : Maybe Suit
+    , trump : Trump
     , scores : Dict String Int
     }
 
@@ -36,7 +36,7 @@ type FrontendMsg
     | PlayCard Card
     | UndoCard
     | GatherCards
-    | ChangeTrump Suit
+    | ChangeTrump Trump
     | NextRound
     | NoOpFrontendMsg
 
@@ -48,7 +48,7 @@ type ToBackend
     | Played Card
     | UndoCardPlayed
     | Gathered
-    | TrumpChanged Suit
+    | TrumpChanged Trump
     | RestoreName
     | RestoreSession
     | NextRoundRequested
@@ -66,7 +66,7 @@ type ToFrontend
     | PlayedBy String Card
     | UndoBy String Card
     | ClearPlayed
-    | NewTrump Suit
+    | NewTrump Trump
     | RestoredName String
     | Scores (Dict String Int)
 
@@ -81,7 +81,7 @@ type alias Game =
     { hands : Dict SessionId (List Card)
     , gathered : Dict SessionId (List Card)
     , played : Dict SessionId Card
-    , trump : Maybe Suit
+    , trump : Trump
     }
 
 
@@ -96,6 +96,12 @@ type Suit
     | Diamonds
     | Hearts
     | Spades
+
+
+type Trump
+    = NoTrump
+    | SingleTrump Suit
+    | AllTrumps
 
 
 type Rank
@@ -163,6 +169,27 @@ rankOrder isTrump rank =
             rankValue isTrump rank
 
 
-cardValue : Maybe Suit -> Card -> Int
+cardValue : Trump -> Card -> Int
 cardValue trump card =
-    rankValue (Just card.suit == trump) card.rank
+    case trump of
+        NoTrump ->
+            rankValue False card.rank
+        
+        SingleTrump suit ->
+            rankValue (card.suit == suit) card.rank
+        
+        AllTrumps ->
+            rankValue True card.rank
+
+
+isTrumpSuit : Trump -> Suit -> Bool
+isTrumpSuit trump suit =
+    case trump of
+        NoTrump ->
+            False
+        
+        SingleTrump trumpSuit ->
+            suit == trumpSuit
+        
+        AllTrumps ->
+            True
