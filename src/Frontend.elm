@@ -410,7 +410,7 @@ viewGame model =
         , row
             [ -- gather button and undo button
               centerX
-              , spacing 20
+            , spacing 20
             ]
             [ if not (Dict.isEmpty model.scores) then
                 Input.button
