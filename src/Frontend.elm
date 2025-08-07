@@ -565,7 +565,7 @@ trumpToString : Trump -> String
 trumpToString trump =
     case trump of
         NoTrump ->
-            "No Trump"
+            "No Trumps"
 
         SingleTrump suit ->
             suitToString suit
