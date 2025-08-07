@@ -291,9 +291,7 @@ view model =
     , body =
         -- Elm UI based view
         [ layout
-            [ width fill
-            , height fill
-            , padding 20
+            [ padding 20
             , dracula
             ]
             (if model.playing then
