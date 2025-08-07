@@ -17,10 +17,17 @@ In the future, it could be extended to support different numbers of players and 
 - `/src/Env.elm`: Unused for now, but could be used for defining secrets.
 - `/src/Evergreen`: Contains the evergreen migrations from one version of the application to another.
 
+## Development Setup
+
+- Install the Lamdera CLI and Elm formatter using Nix:
+  ```bash
+  nix-shell -p elmPackages.lamdera elmPackages.elm-format
+  ```
+
 ## Coding Recommendations
 
 - Use Elm's type system to ensure safety and correctness (e.g., try as much as possible to make illegal states unrepresentable).
-- Install and run the Elm formatter at each commit to maintain code style.
+- Run the Elm formatter at each commit to maintain code style.
 - Use `lamdera check --force` to generate evergreen migrations when necessary (`--force` is needed to bypass the check that we are on the main branch).
   - Commit the generated migration files.
   - Implement the missing cases in the migration files in a separate commit to ease review.
@@ -29,8 +36,9 @@ In the future, it could be extended to support different numbers of players and 
 
 Testing in local mode is a little bit tricky, because we need 5 players for the game to start and each player needs to have its own browser session. One way to achieve this is to use the Firefox Container extension, which allows you to create separate containers for each player.
 
+- Run `lamdera make` to detect any compilation errors.
 - Run `lamdera live` to start the local server.
-- Use the Firefox Container extension to create 5 containers, one for each player.
+- Use the Firefox Container extension (or equivalent) to create 5 containers, one for each player.
 - Open `http://localhost:8000` in each container and enter a different player name for each container.
 
 Take screenshots of the game in action to demonstrate the functionality.

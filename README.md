@@ -2,6 +2,6 @@ This app is written in [Elm](https://guide.elm-lang.org/) with [Lamdera](https:/
 
 Lamdera can be installed using the [official installers](https://dashboard.lamdera.app/docs/download), which are also wrapped in nixpkgs (`elmPackages.lamdera`).
 
-Use `lamdera live` to run and debug locally (unfortunately many browsers / private browsing sessions are needed to simulate 5 players).
+Use `lamdera live` to run and debug locally (with the Firefox Container extension to get multiple independent sessions to simulate 5 players).
 
 Use `elm-format` to format the source code.
