@@ -418,6 +418,18 @@ responsiveCardPadding =
     padding 6
 
 
+responsiveButtonPadding : Attribute msg
+responsiveButtonPadding =
+    -- Reduced button padding for mobile
+    padding 8
+
+
+responsiveButtonSpacing : Attribute msg
+responsiveButtonSpacing =
+    -- Reduced spacing between buttons for mobile
+    spacing 15
+
+
 viewLobby : Model -> Element FrontendMsg
 viewLobby model =
     -- a form to enter a name and a play button
@@ -441,7 +453,7 @@ viewLobby model =
             , Border.width 1
             , Border.solid
             , Border.color (rgb255 0 0 0)
-            , padding 10
+            , responsiveButtonPadding
             , dracula3
             ]
             { onPress = Just StartGame
@@ -506,7 +518,7 @@ viewGame model =
         , row
             [ -- gather button and undo button
               centerX
-            , spacing 20
+            , responsiveButtonSpacing
             ]
             [ if not (Dict.isEmpty model.scores) then
                 Input.button
@@ -708,5 +720,5 @@ baseButtonAttributes =
     , Border.width 1
     , Border.solid
     , Border.color (rgb255 0 0 0)
-    , padding 10
+    , responsiveButtonPadding
     ]
