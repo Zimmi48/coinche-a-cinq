@@ -358,6 +358,17 @@ viewLobby model =
         ]
 
 
+trumpButtons : Model -> List (Element FrontendMsg)
+trumpButtons model =
+    [ chooseTrumpButton model.trump (SingleTrump Clubs)
+    , chooseTrumpButton model.trump (SingleTrump Diamonds)
+    , chooseTrumpButton model.trump (SingleTrump Hearts)
+    , chooseTrumpButton model.trump (SingleTrump Spades)
+    , chooseTrumpButton model.trump AllTrumps
+    , chooseTrumpButton model.trump NoTrump
+    ]
+
+
 viewGame : Model -> Element FrontendMsg
 viewGame model =
     -- a column with a first line with two cards in the middle
@@ -370,23 +381,12 @@ viewGame model =
         , spacing 10
         , padding 10
         ]
-        [ row
-            [ -- selector for the trump
-              height fill
-            , spacing 50
+        [ -- Trump selector row - wrappable layout
+          wrappedRow
+            [ spacing 15
             , centerX
             ]
-            [ text "Trump"
-            , -- one button per suit
-              chooseTrumpButton model.trump (SingleTrump Clubs)
-            , chooseTrumpButton model.trump (SingleTrump Diamonds)
-            , chooseTrumpButton model.trump (SingleTrump Hearts)
-            , chooseTrumpButton model.trump (SingleTrump Spades)
-            , -- button for all trumps
-              chooseTrumpButton model.trump AllTrumps
-            , -- button for no trump
-              chooseTrumpButton model.trump NoTrump
-            ]
+            ([ el [ Font.bold ] (text "Trump") ] ++ trumpButtons model)
         , row
             [ -- cards centered towards the middle
               height fill
