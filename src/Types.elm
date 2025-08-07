@@ -19,6 +19,9 @@ type alias FrontendModel =
     , playerTopRight : Maybe String
     , trump : Maybe Suit
     , scores : Dict String Int
+    , previousPlayed : Dict String Card
+    , previousScores : Dict String Int
+    , previousTrump : Maybe Suit
     }
 
 

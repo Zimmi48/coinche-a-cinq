@@ -45,6 +45,9 @@ init url key =
       , playerRight = Nothing
       , trump = Nothing
       , scores = Dict.empty
+      , previousPlayed = Dict.empty
+      , previousScores = Dict.empty
+      , previousTrump = Nothing
       }
     , if url.path == "/reset" then
         Cmd.batch
@@ -172,12 +175,15 @@ updateFromBackend msg model =
                 )
 
             else
-                -- this is a new round
+                -- this is a new round, preserve previous round data
                 ( { model
                     | hand = sortHand model.trump hand
                     , played = Dict.empty
                     , scores = Dict.empty
                     , trump = Nothing
+                    , previousPlayed = model.played
+                    , previousScores = model.scores
+                    , previousTrump = model.trump
                   }
                 , Cmd.none
                 )
@@ -335,82 +341,123 @@ viewLobby model =
 
 viewGame : Model -> Element FrontendMsg
 viewGame model =
-    -- a column with a first line with two cards in the middle
-    -- a second line with two cards on the side
-    -- a third line with a card in the middle
-    -- a fourth line with a maximum of 8 cards
-    column
+    -- main game area with previous round sidebar
+    row
         [ width fill
         , height fill
-        , spacing 10
+        , spacing 20
         , padding 10
         ]
-        [ row
-            [ -- selector for the trump
-              height fill
-            , spacing 100
-            , centerX
+        [ -- main game area
+          column
+            [ width fill
+            , height fill
+            , spacing 10
             ]
-            [ text "Trump"
-            , -- one button per suit
-              chooseTrumpButton model.trump Clubs
-            , chooseTrumpButton model.trump Diamonds
-            , chooseTrumpButton model.trump Hearts
-            , chooseTrumpButton model.trump Spades
-            ]
-        , row
-            [ -- cards centered towards the middle
-              height fill
-            , spacing 100
-            , centerX
-            ]
-            [ viewCardWithName (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.played)) (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.scores)) model.playerTopLeft
-            , viewCardWithName (model.playerTopRight |> Maybe.andThen (flip Dict.get model.played)) (model.playerTopRight |> Maybe.andThen (flip Dict.get model.scores)) model.playerTopRight
-            ]
-        , row
-            [ -- cards on the sides
-              height fill
-            , spacing 400
-            , centerX
-            ]
-            [ viewCardWithName (model.playerLeft |> Maybe.andThen (flip Dict.get model.played)) (model.playerLeft |> Maybe.andThen (flip Dict.get model.scores)) model.playerLeft
-            , viewCardWithName (model.playerRight |> Maybe.andThen (flip Dict.get model.played)) (model.playerRight |> Maybe.andThen (flip Dict.get model.scores)) model.playerRight
-            ]
-        , row
-            [ -- card in the middle
-              centerX
-            ]
-            [ viewCardWithName (Dict.get model.name model.played) (Dict.get model.name model.scores) (Just model.name)
-            ]
-        , row
-            [ -- gather button
-              centerX
-            ]
-            [ if not (Dict.isEmpty model.scores) then
-                Input.button
-                    (baseButtonAttributes ++ [ dracula3 ])
-                    { onPress = Just NextRound
-                    , label = text "Next round"
-                    }
+            [ row
+                [ -- selector for the trump
+                  height fill
+                , spacing 100
+                , centerX
+                ]
+                [ text "Trump"
+                , -- one button per suit
+                  chooseTrumpButton model.trump Clubs
+                , chooseTrumpButton model.trump Diamonds
+                , chooseTrumpButton model.trump Hearts
+                , chooseTrumpButton model.trump Spades
+                ]
+            , row
+                [ -- cards centered towards the middle
+                  height fill
+                , spacing 100
+                , centerX
+                ]
+                [ viewCardWithName (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.played)) (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.scores)) model.playerTopLeft
+                , viewCardWithName (model.playerTopRight |> Maybe.andThen (flip Dict.get model.played)) (model.playerTopRight |> Maybe.andThen (flip Dict.get model.scores)) model.playerTopRight
+                ]
+            , row
+                [ -- cards on the sides
+                  height fill
+                , spacing 400
+                , centerX
+                ]
+                [ viewCardWithName (model.playerLeft |> Maybe.andThen (flip Dict.get model.played)) (model.playerLeft |> Maybe.andThen (flip Dict.get model.scores)) model.playerLeft
+                , viewCardWithName (model.playerRight |> Maybe.andThen (flip Dict.get model.played)) (model.playerRight |> Maybe.andThen (flip Dict.get model.scores)) model.playerRight
+                ]
+            , row
+                [ -- card in the middle
+                  centerX
+                ]
+                [ viewCardWithName (Dict.get model.name model.played) (Dict.get model.name model.scores) (Just model.name)
+                ]
+            , row
+                [ -- gather button
+                  centerX
+                ]
+                [ if not (Dict.isEmpty model.scores) then
+                    Input.button
+                        (baseButtonAttributes ++ [ dracula3 ])
+                        { onPress = Just NextRound
+                        , label = text "Next round"
+                        }
 
-              else if allPlayersHavePlayed model then
-                Input.button
-                    (baseButtonAttributes ++ [ dracula3 ])
-                    { onPress = Just GatherCards
-                    , label = text "Gather"
-                    }
+                  else if allPlayersHavePlayed model then
+                    Input.button
+                        (baseButtonAttributes ++ [ dracula3 ])
+                        { onPress = Just GatherCards
+                        , label = text "Gather"
+                        }
 
-              else
-                none
+                  else
+                    none
+                ]
+            , row
+                [ -- maximum of 8 cards
+                  height fill
+                , spacing 70
+                , centerX
+                ]
+                (model.hand |> complete_list 8 |> List.map (viewCard dracula))
             ]
-        , row
-            [ -- maximum of 8 cards
-              height fill
-            , spacing 70
-            , centerX
-            ]
-            (model.hand |> complete_list 8 |> List.map (viewCard dracula))
+        , -- previous round sidebar
+          viewPreviousRound model
         ]
+
+
+viewPreviousRound : Model -> Element FrontendMsg
+viewPreviousRound model =
+    if Dict.isEmpty model.previousScores then
+        none
+    else
+        column
+            [ width (px 250)
+            , height fill
+            , padding 15
+            , spacing 10
+            , dracula2
+            , Border.rounded 5
+            ]
+            [ el [ Font.bold, centerX ] (text "Previous Round")
+            , case model.previousTrump of
+                Just trump ->
+                    row [ spacing 5 ]
+                        [ text "Trump: "
+                        , el [ Font.bold ] (text (suitToString trump))
+                        ]
+                Nothing ->
+                    none
+            , column [ spacing 5, width fill ]
+                (model.previousScores
+                    |> Dict.toList
+                    |> List.map (\(name, score) ->
+                        row [ width fill, spacing 10 ]
+                            [ el [ width (px 100) ] (text name)
+                            , el [ alignRight ] (text (String.fromInt score))
+                            ]
+                    )
+                )
+            ]
 
 
 chooseTrumpButton : Maybe Suit -> Suit -> Element FrontendMsg
