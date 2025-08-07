@@ -87,7 +87,7 @@ updateFromFrontend sessionId clientId msg model =
                                                 { hands = hands
                                                 , gathered = Dict.empty
                                                 , played = Dict.empty
-                                                , trump = NoTrump
+                                                , trump = AllTrumps
                                                 }
                                             )
                                             initialHands
@@ -317,7 +317,7 @@ updateFromFrontend sessionId clientId msg model =
                                             | hands = hands
                                             , gathered = Dict.empty
                                             , played = Dict.empty
-                                            , trump = NoTrump
+                                            , trump = AllTrumps
                                         }
                                     )
                                     newHands

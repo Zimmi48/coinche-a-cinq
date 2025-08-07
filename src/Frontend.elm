@@ -43,7 +43,7 @@ init url key =
       , playerTopRight = Nothing
       , playerLeft = Nothing
       , playerRight = Nothing
-      , trump = NoTrump
+      , trump = AllTrumps
       , scores = Dict.empty
       }
     , if url.path == "/reset" then
@@ -190,7 +190,7 @@ updateFromBackend msg model =
                     | hand = sortHand model.trump hand
                     , played = Dict.empty
                     , scores = Dict.empty
-                    , trump = NoTrump
+                    , trump = AllTrumps
                   }
                 , Cmd.none
                 )
@@ -566,10 +566,10 @@ trumpToString trump =
     case trump of
         NoTrump ->
             "No Trump"
-        
+
         SingleTrump suit ->
             suitToString suit
-        
+
         AllTrumps ->
             "All Trumps"
 
