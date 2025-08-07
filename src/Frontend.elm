@@ -452,8 +452,7 @@ viewPreviousRound model =
                     |> Dict.toList
                     |> List.map (\(name, score) ->
                         row [ width fill, spacing 10 ]
-                            [ el [ width (px 100) ] (text name)
-                            , el [ alignRight ] (text (String.fromInt score))
+                            [ text (name ++ ": " ++ String.fromInt score)
                             ]
                     )
                 )
