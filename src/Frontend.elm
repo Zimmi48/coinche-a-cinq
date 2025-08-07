@@ -201,14 +201,14 @@ updateFromBackend msg model =
             )
 
         UndoBy name card ->
-            ( { model 
-                | played = Dict.remove name model.played
-                , hand = 
-                    if name == model.name then
-                        (card :: model.hand) |> sortHand model.trump
-                    else
-                        model.hand
-              }
+            ( if name == model.name then
+                -- we have already taken care of this in the update function
+                model
+
+              else
+                { model
+                    | played = Dict.remove name model.played
+                }
             , Cmd.none
             )
 
