@@ -32,6 +32,36 @@ In the future, it could be extended to support different numbers of players and 
   - Commit the generated migration files.
   - Implement the missing cases in the migration files in a separate commit to ease review.
 
+### Responsive Design Guidelines
+
+When implementing UI components in this Elm UI application:
+
+#### Sizing
+
+- **Avoid fixed pixel values** for card dimensions and spacing
+- **Use constraint-based sizing**: `fill |> minimum X |> maximum Y` for flexible elements
+- **Prefer relative spacing** over fixed pixel values
+- **Test on multiple screen sizes** (mobile: 375px, tablet: 768px, desktop: 1200px+)
+
+#### Layout Patterns
+
+- **Use `wrappedRow`** for elements that should wrap on small screens (trump selector, card hands)
+- **Use `row` with reduced spacing** for elements that should stay horizontal but be closer together
+- **Consider `column` layouts** for mobile-first approaches on very small screens
+
+#### Testing Responsive Design
+
+- Create responsive demos/prototypes using simple HTML/CSS to validate concepts
+- Test wrapping behavior by resizing browser windows
+- Verify touch targets are appropriately sized for mobile (minimum 44px touch areas)
+
+#### Elm UI Responsive Features to Leverage
+
+- `fill |> minimum X |> maximum Y` for flexible sizing
+- `wrappedRow` for automatic wrapping layouts
+- `spacing` with smaller values for mobile-friendly interfaces
+- `paddingXY` and `paddingEach` for fine-tuned spacing control
+
 ## Testing
 
 Testing in local mode is a little bit tricky, because we need 5 players for the game to start and each player needs to have its own browser session. One way to achieve this is to use the Firefox Container extension, which allows you to create separate containers for each player.
