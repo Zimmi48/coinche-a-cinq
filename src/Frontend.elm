@@ -291,7 +291,7 @@ view model =
     , body =
         -- Elm UI based view
         [ layout
-            [ padding 20
+            [ responsiveMainPadding
             , dracula
             ]
             (if model.playing then
@@ -324,12 +324,106 @@ white =
     Background.color (rgb255 255 255 255)
 
 
+{-| Responsive spacing helpers for mobile-friendly layout
+-}
+responsiveMainPadding : Attribute msg
+responsiveMainPadding =
+    -- Reduced padding for mobile, normal for desktop
+    paddingXY 10 15
+
+
+responsiveGamePadding : Attribute msg
+responsiveGamePadding =
+    -- Reduced padding for mobile game area
+    paddingXY 5 8
+
+
+responsiveGameSpacing : Attribute msg
+responsiveGameSpacing =
+    -- Reduced spacing for mobile game elements
+    spacing 6
+
+
+responsiveTrumpSpacing : Attribute msg
+responsiveTrumpSpacing =
+    -- Reduced spacing for trump selector on mobile
+    spacing 8
+
+
+responsivePlayerSpacingHorizontal : Attribute msg
+responsivePlayerSpacingHorizontal =
+    -- Reduced horizontal spacing between top/side players for mobile
+    spacing 60
+
+
+responsivePlayerSpacingSide : Attribute msg
+responsivePlayerSpacingSide =
+    -- Reduced spacing between left/right players for mobile
+    spacing 200
+
+
+responsiveHandSpacing : Attribute msg
+responsiveHandSpacing =
+    -- Reduced spacing between cards in hand for mobile
+    spacing 35
+
+
+responsiveLobbyPadding : Attribute msg
+responsiveLobbyPadding =
+    -- Reduced lobby padding for mobile
+    paddingXY 15 15
+
+
+responsiveLobbySpacing : Attribute msg
+responsiveLobbySpacing =
+    -- Reduced lobby spacing for mobile
+    spacing 15
+
+
+{-| Responsive card dimensions for mobile-friendly display
+-}
+responsiveCardWithNameWidth : Attribute msg
+responsiveCardWithNameWidth =
+    -- Slightly smaller cards on mobile
+    width (px 100)
+
+
+responsiveCardWithNameHeight : Attribute msg
+responsiveCardWithNameHeight =
+    -- Slightly smaller cards on mobile
+    height (px 170)
+
+
+responsiveCardWidth : Attribute msg
+responsiveCardWidth =
+    -- Smaller hand cards on mobile
+    width (px 80)
+
+
+responsiveCardHeight : Attribute msg
+responsiveCardHeight =
+    -- Smaller hand cards on mobile
+    height (px 120)
+
+
+responsiveCardSpacing : Attribute msg
+responsiveCardSpacing =
+    -- Reduced spacing within cards
+    spacing 5
+
+
+responsiveCardPadding : Attribute msg
+responsiveCardPadding =
+    -- Reduced padding within cards
+    padding 6
+
+
 viewLobby : Model -> Element FrontendMsg
 viewLobby model =
     -- a form to enter a name and a play button
     column
-        [ padding 20
-        , spacing 20
+        [ responsiveLobbyPadding
+        , responsiveLobbySpacing
         , dracula2
         ]
         [ Input.text [ dracula3 ]
@@ -376,19 +470,19 @@ viewGame model =
     column
         [ width fill
         , height fill
-        , spacing 10
-        , padding 10
+        , responsiveGameSpacing
+        , responsiveGamePadding
         ]
         [ -- Trump selector row - wrappable layout
           wrappedRow
-            [ spacing 15
+            [ responsiveTrumpSpacing
             , centerX
             ]
             ([ el [ Font.bold ] (text "Trump") ] ++ trumpButtons model)
         , row
             [ -- cards centered towards the middle
               height fill
-            , spacing 100
+            , responsivePlayerSpacingHorizontal
             , centerX
             ]
             [ viewCardWithName (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.played)) (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.scores)) model.playerTopLeft
@@ -397,7 +491,7 @@ viewGame model =
         , row
             [ -- cards on the sides
               height fill
-            , spacing 400
+            , responsivePlayerSpacingSide
             , centerX
             ]
             [ viewCardWithName (model.playerLeft |> Maybe.andThen (flip Dict.get model.played)) (model.playerLeft |> Maybe.andThen (flip Dict.get model.scores)) model.playerLeft
@@ -444,7 +538,7 @@ viewGame model =
           wrappedRow
             [ -- maximum of 8 cards
               height fill
-            , spacing 70
+            , responsiveHandSpacing
             , centerX
             ]
             (model.hand |> complete_list 8 |> List.map (viewCard dracula))
@@ -492,10 +586,10 @@ complete_list n list =
 viewCardWithName : Maybe Card -> Maybe Int -> Maybe String -> Element FrontendMsg
 viewCardWithName card score name =
     column
-        [ width (px 120)
-        , height (px 200)
-        , spacing 10
-        , padding 10
+        [ responsiveCardWithNameWidth
+        , responsiveCardWithNameHeight
+        , responsiveCardSpacing
+        , responsiveCardPadding
         , dracula2
         ]
         [ viewCard dracula2 card
@@ -514,10 +608,10 @@ viewCardWithName card score name =
 viewCard : Attribute FrontendMsg -> Maybe Card -> Element FrontendMsg
 viewCard default card =
     column
-        ([ width (px 100)
-         , height (px 150)
-         , spacing 10
-         , padding 10
+        ([ responsiveCardWidth
+         , responsiveCardHeight
+         , responsiveCardSpacing
+         , responsiveCardPadding
          , Maybe.map (\_ -> white) card |> Maybe.withDefault default
          , Font.color
             (case card |> Maybe.map .suit of
