@@ -19,10 +19,11 @@ In the future, it could be extended to support different numbers of players and 
 
 ## Development Setup
 
-- Install the Lamdera CLI and Elm formatter using Nix:
+- Install the Lamdera CLI and Elm formatter using Nix. First, ensure you have Nix installed on your system. Then, run the following command to enter a Nix shell with the necessary dependencies:
   ```bash
   nix-shell -p elmPackages.lamdera elmPackages.elm-format
   ```
+  Never try to install Lamdera from static.lamdera.com, as this URL is blocked from being accessed from Copilot.
 
 ## Coding Recommendations
 
@@ -72,3 +73,4 @@ Testing in local mode is a little bit tricky, because we need 5 players for the 
 - Open `http://localhost:8000` in each container and enter a different player name for each container.
 
 Take screenshots of the game in action to demonstrate the functionality.
+Never create fake screenshots with other tools, like Playwright, as this is deceptive for code review.
