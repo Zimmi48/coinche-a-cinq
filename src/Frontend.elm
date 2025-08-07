@@ -291,9 +291,7 @@ view model =
     , body =
         -- Elm UI based view
         [ layout
-            [ width fill
-            , height fill
-            , padding 20
+            [ padding 20
             , dracula
             ]
             (if model.playing then
@@ -358,6 +356,17 @@ viewLobby model =
         ]
 
 
+trumpButtons : Model -> List (Element FrontendMsg)
+trumpButtons model =
+    [ chooseTrumpButton model.trump (SingleTrump Clubs)
+    , chooseTrumpButton model.trump (SingleTrump Diamonds)
+    , chooseTrumpButton model.trump (SingleTrump Hearts)
+    , chooseTrumpButton model.trump (SingleTrump Spades)
+    , chooseTrumpButton model.trump AllTrumps
+    , chooseTrumpButton model.trump NoTrump
+    ]
+
+
 viewGame : Model -> Element FrontendMsg
 viewGame model =
     -- a column with a first line with two cards in the middle
@@ -370,23 +379,12 @@ viewGame model =
         , spacing 10
         , padding 10
         ]
-        [ row
-            [ -- selector for the trump
-              height fill
-            , spacing 50
+        [ -- Trump selector row - wrappable layout
+          wrappedRow
+            [ spacing 15
             , centerX
             ]
-            [ text "Trump"
-            , -- one button per suit
-              chooseTrumpButton model.trump (SingleTrump Clubs)
-            , chooseTrumpButton model.trump (SingleTrump Diamonds)
-            , chooseTrumpButton model.trump (SingleTrump Hearts)
-            , chooseTrumpButton model.trump (SingleTrump Spades)
-            , -- button for all trumps
-              chooseTrumpButton model.trump AllTrumps
-            , -- button for no trump
-              chooseTrumpButton model.trump NoTrump
-            ]
+            ([ el [ Font.bold ] (text "Trump") ] ++ trumpButtons model)
         , row
             [ -- cards centered towards the middle
               height fill
@@ -442,10 +440,10 @@ viewGame model =
               else
                 none
             ]
-        , row
-            [ -- maximum of 8 cards
-              height fill
-            , spacing 70
+        , -- Player's hand - responsive layout with wrapping
+          wrappedRow
+            [ width fill
+            , spacing 10
             , centerX
             ]
             (model.hand |> complete_list 8 |> List.map (viewCard dracula))
@@ -493,10 +491,10 @@ complete_list n list =
 viewCardWithName : Maybe Card -> Maybe Int -> Maybe String -> Element FrontendMsg
 viewCardWithName card score name =
     column
-        [ width (px 120)
-        , height (px 200)
-        , spacing 10
-        , padding 10
+        [ width (fill |> minimum 80 |> maximum 120)
+        , height (fill |> minimum 130 |> maximum 200)
+        , spacing 5
+        , padding 5
         , dracula2
         ]
         [ viewCard dracula2 card
@@ -512,12 +510,13 @@ viewCardWithName card score name =
         ]
 
 
+viewCard : Attribute FrontendMsg -> Maybe Card -> Element FrontendMsg
 viewCard default card =
     column
-        ([ width (px 100)
-         , height (px 150)
-         , spacing 10
-         , padding 10
+        ([ width (fill |> minimum 60 |> maximum 100)
+         , height (fill |> minimum 90 |> maximum 150)
+         , spacing 2
+         , padding 5
          , Maybe.map (\_ -> white) card |> Maybe.withDefault default
          , Font.color
             (case card |> Maybe.map .suit of
