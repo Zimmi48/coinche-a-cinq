@@ -426,7 +426,9 @@ viewGame model =
                     , label = text "Gather"
                     }
 
-              else if canUndoCard model then
+              else
+                none
+            , if canUndoCard model then
                 Input.button
                     (baseButtonAttributes ++ [ dracula3 ])
                     { onPress = Just UndoCard
@@ -469,8 +471,9 @@ allPlayersHavePlayed model =
 
 canUndoCard : Model -> Bool
 canUndoCard model =
-    -- Can undo if the current player has played a card but not all players have played
-    (model.played |> Dict.get model.name |> (/=) Nothing) && not (allPlayersHavePlayed model)
+    -- Currently, a player can undo a card if they have played a card
+    -- In the future, we might restrict this to only the player who played the card
+    model.played |> Dict.get model.name |> (/=) Nothing
 
 
 complete_list : Int -> List a -> List (Maybe a)
