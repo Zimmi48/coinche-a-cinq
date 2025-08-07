@@ -174,10 +174,10 @@ cardValue trump card =
     case trump of
         NoTrump ->
             rankValue False card.rank
-        
+
         SingleTrump suit ->
             rankValue (card.suit == suit) card.rank
-        
+
         AllTrumps ->
             rankValue True card.rank
 
@@ -187,9 +187,9 @@ isTrumpSuit trump suit =
     case trump of
         NoTrump ->
             False
-        
+
         SingleTrump trumpSuit ->
             suit == trumpSuit
-        
+
         AllTrumps ->
             True
