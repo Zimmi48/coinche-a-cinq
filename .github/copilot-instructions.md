@@ -73,4 +73,4 @@ Testing in local mode is a little bit tricky, because we need 5 players for the 
 - Open `http://localhost:8000` in each container and enter a different player name for each container.
 
 Take screenshots of the game in action to demonstrate the functionality.
-Never create fake screenshots with other tools, like Playwright, as this is deceptive for code review.
+Never create fake screenshots as this is deceptive for code review.
