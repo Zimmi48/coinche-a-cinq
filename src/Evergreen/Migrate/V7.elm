@@ -165,4 +165,3 @@ migrate_Types_ToBackend old =
 
         Evergreen.V5.Types.RestoreSession ->
             Evergreen.V7.Types.RestoreSession
-

@@ -381,14 +381,14 @@ viewGame model =
         ]
         [ -- Trump selector row - wrappable layout
           wrappedRow
-            [ spacing 15
+            [ spacing 10
             , centerX
             ]
             ([ el [ Font.bold ] (text "Trump") ] ++ trumpButtons model)
         , row
             [ -- cards centered towards the middle
               height fill
-            , spacing 100
+            , spacing 60
             , centerX
             ]
             [ viewCardWithName (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.played)) (model.playerTopLeft |> Maybe.andThen (flip Dict.get model.scores)) model.playerTopLeft
@@ -397,7 +397,7 @@ viewGame model =
         , row
             [ -- cards on the sides
               height fill
-            , spacing 400
+            , spacing 200
             , centerX
             ]
             [ viewCardWithName (model.playerLeft |> Maybe.andThen (flip Dict.get model.played)) (model.playerLeft |> Maybe.andThen (flip Dict.get model.scores)) model.playerLeft
@@ -444,7 +444,7 @@ viewGame model =
           wrappedRow
             [ -- maximum of 8 cards
               height fill
-            , spacing 70
+            , spacing 40
             , centerX
             ]
             (model.hand |> complete_list 8 |> List.map (viewCard dracula))
@@ -492,10 +492,10 @@ complete_list n list =
 viewCardWithName : Maybe Card -> Maybe Int -> Maybe String -> Element FrontendMsg
 viewCardWithName card score name =
     column
-        [ width (px 120)
-        , height (px 200)
-        , spacing 10
-        , padding 10
+        [ width (fill |> minimum 100 |> maximum 120)
+        , height (fill |> minimum 160 |> maximum 200)
+        , spacing 8
+        , padding 8
         , dracula2
         ]
         [ viewCard dracula2 card
@@ -514,10 +514,10 @@ viewCardWithName card score name =
 viewCard : Attribute FrontendMsg -> Maybe Card -> Element FrontendMsg
 viewCard default card =
     column
-        ([ width (px 100)
-         , height (px 150)
-         , spacing 10
-         , padding 10
+        ([ width (fill |> minimum 80 |> maximum 100)
+         , height (fill |> minimum 120 |> maximum 150)
+         , spacing 8
+         , padding 8
          , Maybe.map (\_ -> white) card |> Maybe.withDefault default
          , Font.color
             (case card |> Maybe.map .suit of
