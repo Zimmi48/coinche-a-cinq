@@ -17,14 +17,6 @@ In the future, it could be extended to support different numbers of players and 
 - `/src/Env.elm`: Unused for now, but could be used for defining secrets.
 - `/src/Evergreen`: Contains the evergreen migrations from one version of the application to another.
 
-## Development Setup
-
-- Install the Lamdera CLI and Elm formatter using Nix. First, ensure you have Nix installed on your system. Then, run the following command to enter a Nix shell with the necessary dependencies:
-  ```bash
-  nix-shell -p elmPackages.lamdera elmPackages.elm-format
-  ```
-  Never try to install Lamdera from static.lamdera.com, as this URL is blocked from being accessed from Copilot.
-
 ## Coding Recommendations
 
 - Use Elm's type system to ensure safety and correctness (e.g., try as much as possible to make illegal states unrepresentable).
