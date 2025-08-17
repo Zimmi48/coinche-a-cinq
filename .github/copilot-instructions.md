@@ -65,12 +65,12 @@ When implementing UI components in this Elm UI application:
 
 ## Testing
 
-Testing in local mode is a little bit tricky, because we need 5 players for the game to start and each player needs to have its own browser session. One way to achieve this is to use the Firefox Container extension, which allows you to create separate containers for each player.
+Testing in local mode is a little bit tricky, because we need 5 players for the game to start and each player needs to have its own browser session.
 
 - Run `lamdera make` to detect any compilation errors.
 - Run `lamdera live` to start the local server.
-- Use the Firefox Container extension (or equivalent) to create 5 containers, one for each player.
-- Open `http://localhost:8000` in each container and enter a different player name for each container.
+- Start five different browser sessions, one for each player.
+- Open `http://localhost:8000` in each session and enter a different player name for each player.
 
 Take screenshots of the game in action to demonstrate the functionality.
 Never create fake screenshots as this is deceptive for code review.
